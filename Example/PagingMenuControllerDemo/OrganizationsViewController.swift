@@ -8,53 +8,58 @@
 
 import UIKit
 
-class OrganizationsViewController: UITableViewController {
+class OrganizationsViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+    @IBOutlet weak var tableView: UITableView!
     var organizations = [[String: AnyObject]]()
-    
-    class func instantiateFromStoryboard() -> OrganizationsViewController {
-        let storyboard = UIStoryboard(name: "MenuViewController", bundle: nil)
-        return storyboard.instantiateViewController(withIdentifier: String(describing: self)) as! OrganizationsViewController
-    }
     
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let url = URL(string: "https://api.github.com/organizations")
-        let request = URLRequest(url: url!)
-        let session = URLSession(configuration: URLSessionConfiguration.default)
+        let url = NSURL(string: "https://api.github.com/organizations")
+        let request = NSURLRequest(URL: url!)
+        let session = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration())
         
-        let task = session.dataTask(with: request) { [weak self] data, response, error in
-            let result = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments) as! [[String: AnyObject]]
-            self?.organizations = result ?? []
+        let task = session.dataTaskWithRequest(request) { [unowned self] data, response, error in
+            do {
+                let result = try NSJSONSerialization.JSONObjectWithData(data!, options: .AllowFragments) as! [[String: AnyObject]]
+                self.organizations = result
+            } catch _ {
+                
+            }
             
-            DispatchQueue.main.async(execute: { () -> Void in
-                self?.tableView.reloadData()
+            dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                self.tableView.reloadData()
             })
         }
         task.resume()
     }
-}
-
-extension OrganizationsViewController {
+    
     // MARK: - UITableViewDataSource
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return organizations.count
     }
     
     // MARK: - UITableViewDelegate
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) 
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCellWithIdentifier("Cell", forIndexPath: indexPath) 
         
-        let organization = organizations[(indexPath as NSIndexPath).row]
+        let organization = organizations[indexPath.row]
         cell.textLabel?.text = organization["login"] as? String
         return cell
     }
     
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        
+        let detailViewController = storyboard?.instantiateViewControllerWithIdentifier("DetailViewController") as! DetailViewController
+        navigationController?.pushViewController(detailViewController, animated: true)
+    }
+    
+    func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
         return true
     }
 }

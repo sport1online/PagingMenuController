@@ -7,18 +7,17 @@
 //
 
 import UIKit
-import PagingMenuController
 
 class ViewController2: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = UIColor.lightGray
+        view.backgroundColor = UIColor.lightGrayColor()
         
-        let textLabel = UILabel(frame: CGRect(x: 0, y: 0, width: 200, height: 30))
+        let textLabel = UILabel(frame: CGRectMake(0, 0, 200, 30))
         textLabel.center = view.center
-        textLabel.textAlignment = .center
-        textLabel.font = UIFont.systemFont(ofSize: 24)
+        textLabel.textAlignment = .Center
+        textLabel.font = UIFont.systemFontOfSize(24)
         textLabel.text = "View Controller 2"
         view.addSubview(textLabel)
     }
